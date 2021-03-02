@@ -60,7 +60,7 @@ class ErrorTrace(type):
         return type.__new__(mcs, name, bases, wrapped_attrs, **kwargs)
 
 
-def get_script_section(script, section_name):
+def get_script_section(script: Dict[str, Any], section_name: str) -> str:
     assert isinstance(script, dict), f'expected dict, got {script}'
     assert isinstance(script['code'], list), f'expected list, got {script.get("code")}'
     return next(section for section in script['code'] if section['prim'] == section_name)
