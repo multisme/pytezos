@@ -1,4 +1,6 @@
 from pytezos.operation.forge import forge_operation
+from pytezos.operation.types import OperationGroupContent
+
 
 hard_gas_limit_per_operation = 1040000
 hard_storage_limit_per_operation = 60000
@@ -7,7 +9,7 @@ minimal_nanotez_per_byte = 1
 minimal_nanotez_per_gas_unit = .1
 
 
-def calculate_fee(content: dict, consumed_gas: int, extra_size: int, reserve=10) -> int:
+def calculate_fee(content: OperationGroupContent, consumed_gas: int, extra_size: int, reserve=10) -> int:
     """ Calculate minimal required operation fee.
 
     :param content: operation content {..., "kind": "transaction", ... }

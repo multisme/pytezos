@@ -1,6 +1,6 @@
 from pprint import pformat
 from typing import List, Optional, Any, Dict
-
+from pytezos.operation.types import OperationGroupContent
 from pytezos.crypto.key import blake2b_32
 from pytezos.operation.content import ContentMixin
 from pytezos.operation.forge import forge_operation_group
@@ -15,6 +15,7 @@ from pytezos.jupyter import get_class_docstring
 
 DEFAULT_GAS_RESERVE = 100
 DEFAULT_BRANCH_OFFSET = 50
+MAX_BRANCH_OFFSET = 60
 
 # FIXME: Add explaination of these values
 validation_passes = {
@@ -40,7 +41,7 @@ class OperationGroup(ContextMixin, ContentMixin):
     def __init__(
         self,
         context: ExecutionContext,
-        contents: Optional[List[Dict[str, Any]]] = None,
+        contents: Optional[List[OperationGroupContent]] = None,
         protocol: Optional[str] = None,
         chain_id: Optional[int] = None,
         branch: Optional[str] = None,
@@ -63,7 +64,7 @@ class OperationGroup(ContextMixin, ContentMixin):
         ]
         return '\n'.join(res)
 
-    def _spawn(self, **kwargs):
+    def _spawn(self, **kwargs) -> 'OperationGroup':
         return OperationGroup(
             context=self.context,
             contents=kwargs.get('contents', self.contents.copy()),
@@ -91,7 +92,7 @@ class OperationGroup(ContextMixin, ContentMixin):
 
         return bytes.fromhex(self.forge()) + forge_base58(self.signature)
 
-    def operation(self, content):
+    def operation(self, content: OperationGroupContent) -> 'OperationGroup':
         """ Create new operation group with extra content added.
 
         :param content: Kind-specific operation body
@@ -99,15 +100,15 @@ class OperationGroup(ContextMixin, ContentMixin):
         """
         return self._spawn(contents=self.contents + [content])
 
-    def fill(self, counter=None, branch_offset=50):
-        """ Try to fill all fields left unfilled, use approximate fees
+    def fill(self, counter=None, branch_offset=DEFAULT_BRANCH_OFFSET) -> 'OperationGroup':
+        f""" Try to fill all fields left unfilled, use approximate fees
         (not optimal, use `autofill` to simulate operation and get precise values).
 
         :param counter: Override counter value (for manual handling)
         :param branch_offset: select head~offset block as branch, where offset is in range (0, 60)
         :rtype: OperationGroup
         """
-        assert 0 < branch_offset < 60, f'branch offset has to be in range (0, 60)'
+        assert 0 < branch_offset < MAX_BRANCH_OFFSET, f'branch offset has to be in range (0, {MAX_BRANCH_OFFSET})'
         chain_id = self.chain_id or self.context.get_chain_id()
         branch = self.branch or self.shell.blocks[-branch_offset].hash()
         protocol = self.protocol or self.shell.head.header()['protocol']
@@ -203,7 +204,7 @@ class OperationGroup(ContextMixin, ContentMixin):
 
         extra_size = (32 + 64) // len(opg.contents) + 1  # size of serialized branch and signature
 
-        def fill_content(content: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        def fill_content(content: OperationGroupContent) -> Optional[OperationGroupContent]:
             if validation_passes[content['kind']] != 3:
                 return None
 
@@ -222,18 +223,24 @@ class OperationGroup(ContextMixin, ContentMixin):
                 storage_limit = _paid_storage_size_diff + _burned
 
             content.update(
-                gas_limit=str(gas_limit),
-                storage_limit=str(storage_limit),
-                fee=str(fee),
+                # NOTE: mypy false positive
+                gas_limit=str(gas_limit),  # type: ignore
+                storage_limit=str(storage_limit),  # type: ignore
+                fee=str(fee),  # type ignore
             )
 
             content.pop('metadata')
             return content
 
-        opg.contents = list(map(fill_content, opg_with_metadata['contents']))
+        opg.contents = list(
+            filter(
+                lambda c: c is not None,
+                map(fill_content, opg_with_metadata['contents'])  # type: ignore
+            )
+        )
         return opg
 
-    def sign(self):
+    def sign(self) -> 'OperationGroup':
         """ Sign the operation group with the key specified by `using`.
 
         :rtype: OperationGroup

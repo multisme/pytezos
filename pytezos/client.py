@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from pytezos.rpc import ShellQuery
 from pytezos.crypto.key import Key
-from pytezos.operation.group import OperationGroup
+from pytezos.operation.group import OperationGroup, OperationGroupContent
 from pytezos.operation.content import ContentMixin
 from pytezos.contract.interface import ContractInterface
 from pytezos.contract.call import ContractCall
@@ -42,7 +42,7 @@ class PyTezosClient(ContextMixin, ContentMixin):
             signature=signature
         )
 
-    def operation(self, content: dict) -> OperationGroup:
+    def operation(self, content: OperationGroupContent) -> OperationGroup:
         """ Create an operation group with single content.
 
         :param content: Operation body (depending on `kind`)
@@ -56,7 +56,7 @@ class PyTezosClient(ContextMixin, ContentMixin):
         :param operations: a tuple of operations or contract calls
         :rtype: OperationGroup
         """
-        contents = []
+        contents: List[OperationGroupContent] = []
         reset_fields = {
             'pkh': '',
             'source': '',
