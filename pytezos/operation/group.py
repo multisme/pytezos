@@ -1,4 +1,4 @@
-from pprint import pformat
+from pprint import pformat, pprint
 from typing import List, Optional, Any, Dict
 
 from pytezos.crypto.key import blake2b_32
@@ -12,6 +12,7 @@ from pytezos.michelson.forge import forge_base58
 from pytezos.context.mixin import ContextMixin  # type: ignore
 from pytezos.context.impl import ExecutionContext  # type: ignore
 from pytezos.jupyter import get_class_docstring
+from functools import partial
 
 DEFAULT_GAS_RESERVE = 100
 DEFAULT_BRANCH_OFFSET = 50
@@ -74,6 +75,9 @@ class OperationGroup(ContextMixin, ContentMixin):
         )
 
     def _adjust_counter(self) -> None:
+        """Adjust counter based on pending transactions in mempool.
+        """
+        current_counter = self.context.counter
         key_hash = self.key.public_key_hash()
         mempool = self.shell.mempool.pending_operations()
 
@@ -84,10 +88,11 @@ class OperationGroup(ContextMixin, ContentMixin):
                     operation = operation[1]
                 for content in operation.get('contents', []):
                     if content.get('source') == key_hash:
+                        print("pending transaction: ", content)
                         counter = int(content.get('counter'))
-                        self.counter = max(self.counter, counter)
+                        current_counter = max(current_counter, counter)
 
-        self.counter += 1
+        self.context.set_counter(current_counter)
 
     def json_payload(self) -> dict:
         """ Get JSON payload used for the injection.
@@ -217,9 +222,18 @@ class OperationGroup(ContextMixin, ContentMixin):
         if not OperationResult.is_applied(opg_with_metadata):
             raise RpcError.from_errors(OperationResult.errors(opg_with_metadata))
 
+        # FIXME: Counter has been just incremented in fill(), dirty as fuck
+        self.context.counter -= 1
+
+        self._adjust_counter()
+
         extra_size = (32 + 64) // len(opg.contents) + 1  # size of serialized branch and signature
 
         def fill_content(content: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+            nonlocal fee
+            nonlocal gas_limit
+            nonlocal storage_limit
+
             if validation_passes[content['kind']] != 3:
                 return None
 
@@ -241,9 +255,11 @@ class OperationGroup(ContextMixin, ContentMixin):
                 gas_limit=str(gas_limit),
                 storage_limit=str(storage_limit),
                 fee=str(fee),
+                counter=str(self.context.get_counter()),
             )
 
             content.pop('metadata')
+            print("transaction content: ", content)
             return content
 
         opg.contents = list(map(fill_content, opg_with_metadata['contents']))
