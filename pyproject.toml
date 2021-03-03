@@ -46,6 +46,7 @@ sphinx_rtd_theme = { git = "https://github.com/readthedocs/sphinx_rtd_theme.git"
 sphinx-sitemap = "*"
 sphinxcontrib-googleanalytics = "^0.1"
 bump2version = "^1.0.1"
+mypy = "^0.812"
 
 [tool.poetry.scripts]
 pytezos = 'pytezos:cli.cli.main'
