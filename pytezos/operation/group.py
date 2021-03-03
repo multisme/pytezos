@@ -1,3 +1,4 @@
+from deprecation import deprecated
 from pprint import pformat, pprint
 from typing import List, Optional, Any, Dict
 
@@ -292,6 +293,20 @@ class OperationGroup(ContextMixin, ContentMixin):
         hash_digest = blake2b_32(self.binary_payload()).digest()
         return base58_encode(hash_digest, b'o').decode()
 
+    def run_operation(self):
+        # TODO: Docstring
+        return self.shell.blocks['head'].helpers.scripts.run_operation.post(self.json_payload())
+
+    @deprecated(deprecated_in='3.1.0', removed_in='4.0.0', details='use `run_operation()` instead')
+    def preapply(self):
+        """ Preapply signed operation group.
+        :returns: RPC response from `preapply`
+        """
+        if not self.signature:
+            raise ValueError('Not signed')
+
+        return self.run_operation()
+
     def inject(self, _async=True, check_result=True,
                num_blocks_wait=5, time_between_blocks: Optional[int] = None):
         """ Inject the signed operation group.
@@ -328,3 +343,10 @@ class OperationGroup(ContextMixin, ContentMixin):
                     return res
 
         raise TimeoutError(opg_hash)
+
+    @deprecated(deprecated_in='3.1.0', removed_in='4.0.0', details='use `run_operation()` instead')
+    def result(self) -> List[OperationResult]:
+        """ Parse the preapply result.
+        :rtype: List[OperationResult]
+        """
+        return OperationResult.from_operation_group(self.run_operation())
