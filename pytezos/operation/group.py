@@ -76,26 +76,6 @@ class OperationGroup(ContextMixin, ContentMixin):
             signature=kwargs.get('signature', self.signature)
         )
 
-    def _adjust_counter(self) -> None:
-        """Adjust counter based on pending transactions in mempool.
-        """
-        current_counter = self.context.counter
-        key_hash = self.key.public_key_hash()
-        mempool = self.shell.mempool.pending_operations()
-
-        for status, operations in mempool.items():
-            for operation in operations:
-                # FIXME: Replace with pattern matching based on operation kind
-                if isinstance(operation, list):
-                    operation = operation[1]
-                for content in operation.get('contents', []):
-                    if content.get('source') == key_hash:
-                        print("pending transaction: ", content)
-                        counter = int(content.get('counter'))
-                        current_counter = max(current_counter, counter)
-
-        self.context.set_counter(current_counter)
-
     def json_payload(self) -> dict:
         """ Get JSON payload used for the injection.
         """
@@ -220,14 +200,10 @@ class OperationGroup(ContextMixin, ContentMixin):
         :rtype: OperationGroup
         """
         opg = self.fill(counter=counter, branch_offset=branch_offset)
+        # NOTE: Counter offset must not be applied at this stage yet
         opg_with_metadata = opg.run()
         if not OperationResult.is_applied(opg_with_metadata):
             raise RpcError.from_errors(OperationResult.errors(opg_with_metadata))
-
-        # FIXME: Counter has been just incremented in fill(), dirty as fuck
-        self.context.counter -= 1
-
-        self._adjust_counter()
 
         extra_size = (32 + 64) // len(opg.contents) + 1  # size of serialized branch and signature
 
@@ -253,15 +229,16 @@ class OperationGroup(ContextMixin, ContentMixin):
                 _burned = OperationResult.burned(content)
                 storage_limit = _paid_storage_size_diff + _burned
 
+            current_counter = int(content['counter'])
             content.update(
                 gas_limit=str(gas_limit),
                 storage_limit=str(storage_limit),
                 fee=str(fee),
-                counter=str(self.context.get_counter()),
+                counter=str(current_counter + self.context.get_counter_offset())
             )
 
             content.pop('metadata')
-            print("transaction content: ", content)
+            logger.debug("autofilled transaction content: %s" % content)
             return content
 
         opg.contents = list(map(fill_content, opg_with_metadata['contents']))
