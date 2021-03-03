@@ -62,8 +62,24 @@ class OperationGroup(ContextMixin, ContentMixin):
             signature=kwargs.get('signature', self.signature)
         )
 
+    def _adjust_counter(self) -> None:
+        key_hash = self.key.public_key_hash()
+        mempool = self.shell.mempool.pending_operations()
+
+        for status, operations in mempool.items():
+            for operation in operations:
+                # FIXME: Replace with pattern matching based on operation kind
+                if isinstance(operation, list):
+                    operation = operation[1]
+                for content in operation.get('contents', []):
+                    if content.get('source') == key_hash:
+                        counter = int(content.get('counter'))
+                        self.counter = max(self.counter, counter)
+
+        self.counter += 1
+
     def json_payload(self) -> dict:
-        """ Get json payload used for the preapply.
+        """ Get JSON payload used for the injection.
         """
         return {
             'protocol': self.protocol,
@@ -225,33 +241,17 @@ class OperationGroup(ContextMixin, ContentMixin):
         hash_digest = blake2b_32(self.binary_payload()).digest()
         return base58_encode(hash_digest, b'o').decode()
 
-    def preapply(self):
-        """ Preapply signed operation group.
-
-        :returns: RPC response from `preapply`
-        """
-        if not self.signature:
-            raise ValueError('Not signed')
-
-        return self.shell.head.helpers.preapply.operations.post(
-            operations=[self.json_payload()])[0]
-
-    def inject(self, _async=True, preapply=True, check_result=True,
+    def inject(self, _async=True, check_result=True,
                num_blocks_wait=5, time_between_blocks: Optional[int] = None):
         """ Inject the signed operation group.
 
         :param _async: do not wait for operation inclusion (default is True)
-        :param preapply: do a preapply before injection
         :param check_result: raise RpcError in case operation is applied but has runtime errors
         :param num_blocks_wait: number of blocks to wait for injection
         :param time_between_blocks: override the corresponding parameter from constants
         :returns: operation group with metadata (raw RPC response)
         """
         self.context.reset()
-        if preapply:
-            opg_with_metadata = self.preapply()
-            if not OperationResult.is_applied(opg_with_metadata):
-                raise RpcError.from_errors(OperationResult.errors(opg_with_metadata))
 
         opg_hash = self.shell.injection.operation.post(operation=self.binary_payload(), _async=False)
 
@@ -277,10 +277,3 @@ class OperationGroup(ContextMixin, ContentMixin):
                     return res
 
         raise TimeoutError(opg_hash)
-
-    def result(self) -> List[OperationResult]:
-        """ Parse the preapply result.
-
-        :rtype: List[OperationResult]
-        """
-        return OperationResult.from_operation_group(self.preapply())
