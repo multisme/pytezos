@@ -3,7 +3,7 @@ from os.path import abspath, dirname, join, exists
 from pprint import pprint
 import fire
 
-from pytezos import pytezos, ContractInterface
+from pytezos import __version__, pytezos, ContractInterface
 from pytezos.rpc.errors import RpcError
 from pytezos.operation.result import OperationResult
 from pytezos.context.mixin import default_network
@@ -37,6 +37,9 @@ def get_contract(path):
 
 
 class PyTezosCli:
+
+    def version(self) -> None:
+        print(f'pytezos {__version__}')
 
     def storage(self, action, path=None):
         """ Manage contract storage.

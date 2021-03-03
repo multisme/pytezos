@@ -22,4 +22,6 @@ from pytezos.michelson.types.core import Unit
 from pytezos.michelson.types.base import Undefined, MichelsonType
 from pytezos.michelson.micheline import MichelsonRuntimeError
 
+__version__ = '3.0.2'
+
 pytezos = PyTezosClient()
