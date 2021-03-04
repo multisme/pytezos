@@ -36,6 +36,7 @@ bson = "^0.5.10"
 strict_rfc3339 = "0.7"
 py_ecc = "*"
 deprecation = "*"
+testcontainers = "^3.2.0"
 
 [tool.poetry.dev-dependencies]
 parameterized = "^0.7.0"

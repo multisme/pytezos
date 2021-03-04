@@ -8,7 +8,7 @@ install:
 	poetry install
 
 mypy:
-	mypy pytezos
+	poetry run mypy pytezos
 
 lint: mypy
 
