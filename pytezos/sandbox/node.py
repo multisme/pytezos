@@ -1,15 +1,18 @@
 import atexit
-from functools import wraps
-from operator import contains
-from time import sleep
-from pytezos.client import PyTezosClient
 import unittest
-from abc import abstractmethod
+from datetime import datetime
+from time import sleep
+from time import time
+from typing import Any
+from typing import Dict
 from typing import Optional
-from requests.exceptions import ConnectionError
 
+import requests.exceptions
 from testcontainers.core.generic import DockerContainer  # type: ignore
 
+from pytezos import logger
+from pytezos.block.header import BlockHeader, DEFAULT_PROTOCOL, EXAMPLE_PREAPPLY_BLOCK
+from pytezos.client import PyTezosClient
 
 # NOTE: Container object is a singleton which will be used in all tests inherited from class _SandboxedNodeTestCase and stopped after
 # NOTE: all tests are completed.
@@ -61,5 +64,19 @@ class _SandboxedNodeTestCase(unittest.TestCase):
             try:
                 client.shell.node.get("/version/")
                 break
-            except ConnectionError:
+            except requests.exceptions.ConnectionError:
                 sleep(0.1)
+
+    def get_current_protocol(self) -> Dict[str, Any]:
+        return self.get_client().shell.block.protocols()
+
+    def activate_protocol(self):
+        logger.info('Activating protocol')
+        client = self.get_client()
+
+        block_header = BlockHeader(
+            context=client.context,
+            content=EXAMPLE_PREAPPLY_BLOCK['protocol_data']['content'],
+            protocol=DEFAULT_PROTOCOL,
+        )
+        block_header = block_header.sign().inject()
