@@ -11,7 +11,9 @@ import requests.exceptions
 from testcontainers.core.generic import DockerContainer  # type: ignore
 
 from pytezos import logger
-from pytezos.block.header import BlockHeader, DEFAULT_PROTOCOL, EXAMPLE_PREAPPLY_BLOCK
+from pytezos.block.header import DEFAULT_PREAPPLY_BLOCK
+from pytezos.block.header import DEFAULT_PROTOCOL
+from pytezos.block.header import BlockHeader
 from pytezos.client import PyTezosClient
 
 # NOTE: Container object is a singleton which will be used in all tests inherited from class _SandboxedNodeTestCase and stopped after
@@ -76,7 +78,7 @@ class _SandboxedNodeTestCase(unittest.TestCase):
 
         block_header = BlockHeader(
             context=client.context,
-            content=EXAMPLE_PREAPPLY_BLOCK['protocol_data']['content'],
+            content=DEFAULT_PREAPPLY_BLOCK['protocol_data']['content'],
             protocol=DEFAULT_PROTOCOL,
         )
         block_header = block_header.sign().inject()

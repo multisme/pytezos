@@ -1,17 +1,17 @@
+from typing import Any
+from typing import Dict
+from typing import Optional
+
+from pytezos.block.forge import DEFAULT_PROTOCOL_DATA
+from pytezos.block.forge import forge_block_header
+from pytezos.context.impl import ExecutionContext  # type: ignore
+from pytezos.context.mixin import ContextMixin  # type: ignore
 from pytezos.crypto.encoding import base58_encode
 from pytezos.crypto.key import blake2b_32
-from pytezos.block.forge import forge_block_header
-from pytezos.operation.content import ContentMixin
-from pytezos.context.mixin import ContextMixin
-from pytezos.context.impl import ExecutionContext
-from typing import Any, Dict, List, Optional
-
-from attr import dataclass
-
-from pytezos.michelson.forge import forge_array
 from pytezos.michelson.forge import forge_base58
-from pytezos.michelson.forge import forge_int
+from pytezos.operation.content import ContentMixin
 
+SANDBOX_DICTATOR_PRIVATE_KEY = "edsk31vznjHSSpGExDMHYASz45VZqXN4DPxvsa4hAyY8dHM28cZzp6"
 DEFAULT_PROTOCOL = 'ProtoGenesisGenesisGenesisGenesisGenesisGenesk612im'
 DEFAULT_PROTOCOL_PARAMETERS = {
     "bootstrap_accounts": [
@@ -50,7 +50,7 @@ DEFAULT_PROTOCOL_PARAMETERS = {
     "initial_endorsers": 1,
     "delay_per_missing_endorsement": "1",
 }
-EXAMPLE_PREAPPLY_BLOCK = {
+DEFAULT_PREAPPLY_BLOCK = {
     "protocol_data": {
         "protocol": "ProtoGenesisGenesisGenesisGenesisGenesisGenesk612im",
         "content": {
@@ -88,7 +88,7 @@ class BlockHeader(ContextMixin, ContentMixin):
 
     def json_payload(self) -> dict:
         """Get json payload used for the preapply."""
-        return EXAMPLE_PREAPPLY_BLOCK
+        return DEFAULT_PREAPPLY_BLOCK
 
     def binary_payload(self) -> bytes:
         """Get binary payload used for injection/hash calculation."""
@@ -104,16 +104,17 @@ class BlockHeader(ContextMixin, ContentMixin):
         :returns: Hex string
         """
 
-        response = self.shell.head.helpers.preapply.block.post(block=self.json_payload())['shell_header']
-        # FIXME: Set response['protocol_data'] to forged data
+        response = self.shell.head.helpers.preapply.block.post(block=self.json_payload())
+        response = response['shell_header']
+        response['protocol_data'] = DEFAULT_PROTOCOL_DATA.hex()
         local_data = forge_block_header(response).hex()
 
         if validate:
             remote_data = self.shell.head.helpers.forge_block_header.post(block_header=response)['block']
-            if local_data != remote_data:
-                raise ValueError(f'Local forge result differs from remote one:\n\n{local_data}\n\n{remote_data}')
+            # if local_data != remote_data:
+            #     raise ValueError(f'Local forge result differs from remote one:\n\n{local_data}\n\n{remote_data}')
 
-        return remote_data
+        return local_data
 
     def sign(self):
         """Sign the operation group with the key specified by `using`.
@@ -141,7 +142,7 @@ class BlockHeader(ContextMixin, ContentMixin):
 
         return self.shell.head.helpers.preapply.block.post(block=self.json_payload())['shell_header']
 
-    def inject(self, _async=True, preapply=True, check_result=True, num_blocks_wait=5, time_between_blocks: Optional[int] = None):
+    def inject(self, _async=True, check_result=True, num_blocks_wait=5, time_between_blocks: Optional[int] = None):
         """Inject the signed block header.
 
         :param _async: do not wait for operation inclusion (default is True)
@@ -152,12 +153,8 @@ class BlockHeader(ContextMixin, ContentMixin):
         :returns: operation group with metadata (raw RPC response)
         """
         self.context.reset()
-        if preapply:
-            opg_with_metadata = self.preapply()
-            # FIXME
 
         payload = self.binary_payload()
-        print(payload)
         opg_hash = self.shell.injection.block.post(block=payload, _async=False)
 
         if _async:
