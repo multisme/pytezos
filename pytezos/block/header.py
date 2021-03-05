@@ -1,18 +1,22 @@
-from typing import Any, List, Dict, Optional
 from pprint import pformat
-import bson
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
 
+import bson  # type: ignore
+
+from pytezos.block.forge import forge_protocol_data
 from pytezos.context.impl import ExecutionContext  # type: ignore
 from pytezos.context.mixin import ContextMixin  # type: ignore
 from pytezos.crypto.encoding import base58_encode
 from pytezos.crypto.key import blake2b_32
-from pytezos.michelson.forge import forge_base58, forge_array
-from pytezos.block.forge import forge_protocol_data
 from pytezos.jupyter import get_class_docstring
+from pytezos.michelson.forge import forge_array
+from pytezos.michelson.forge import forge_base58
 
 
 class BlockHeader(ContextMixin):
-
     def __init__(
         self,
         context: ExecutionContext,
@@ -20,7 +24,7 @@ class BlockHeader(ContextMixin):
         operations: Optional[List[dict]] = None,
         protocol: Optional[str] = None,
         signature: Optional[str] = None,
-        data: Optional[bytes] = None
+        data: Optional[bytes] = None,
     ):
         super().__init__(context=context)
         self.protocol_data = protocol_data or {}
@@ -35,22 +39,24 @@ class BlockHeader(ContextMixin):
             '\nPayload',
             pformat(self.json_payload()),
             '\nHelpers',
-            get_class_docstring(self.__class__)
+            get_class_docstring(self.__class__),
         ]
         return '\n'.join(res)
 
     @classmethod
-    def activate_protocol(cls, protocol_hash: str, parameters: Dict[str, Any], context: ExecutionContext) \
-            -> 'BlockHeader':
+    def activate_protocol(cls, protocol_hash: str, parameters: Dict[str, Any], context: ExecutionContext) -> 'BlockHeader':
         protocol_data = {
             "content": {
                 "command": "activate",
                 "hash": protocol_hash,
                 "fitness": ["00", "0000000000000001"],
-                "protocol_parameters": forge_array(bson.dumps(parameters)).hex()
+                "protocol_parameters": forge_array(bson.dumps(parameters)).hex(),
             }
         }
-        return BlockHeader(context, protocol_data=protocol_data)
+        return BlockHeader(
+            context=context,
+            protocol_data=protocol_data,
+        )
 
     @classmethod
     def bake_block(cls, min_fee=0) -> 'BlockHeader':
@@ -62,11 +68,11 @@ class BlockHeader(ContextMixin):
             protocol_data=kwargs.get('protocol_data', self.protocol_data.copy()),
             protocol=kwargs.get('protocol', self.protocol),
             signature=kwargs.get('signature', self.signature),
-            data=kwargs.get('data', self.data)
+            data=kwargs.get('data', self.data),
         )
 
     def fill(self) -> 'BlockHeader':
-        """ Fill the protocol field
+        """Fill the protocol field
 
         :rtype: BlockHeader
         """
@@ -83,15 +89,17 @@ class BlockHeader(ContextMixin):
             "protocol_data": {
                 "protocol": self.protocol,
                 **self.protocol_data,
-                "signature": signature
+                "signature": signature,
             },
-            "operations": self.operations
+            "operations": self.operations,
         }
 
     def binary_payload(self) -> bytes:
         """Get binary payload used for injection/hash calculation."""
-        if not self.signature:
+        if self.signature is None:
             raise ValueError('Not signed')
+        if self.data is None:
+            raise ValueError('No data')
         return self.data + forge_base58(self.signature)
 
     def forge(self) -> 'str':
@@ -139,6 +147,6 @@ class BlockHeader(ContextMixin):
         """
         block = {
             "data": self.binary_payload().hex(),
-            "operations": self.operations
+            "operations": self.operations,
         }
         return self.shell.injection.block.post(block=block, _async=_async, force=force)

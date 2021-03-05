@@ -2,6 +2,7 @@ from decimal import Decimal
 from typing import Optional
 from typing import Union
 
+from pytezos.block.header import BlockHeader
 from pytezos.context.mixin import ContextMixin  # type: ignore
 from pytezos.contract.call import ContractCall
 from pytezos.contract.interface import ContractInterface
@@ -10,9 +11,9 @@ from pytezos.jupyter import get_class_docstring
 from pytezos.logging import logger
 from pytezos.operation.content import ContentMixin
 from pytezos.operation.group import OperationGroup
-from pytezos.block.header import BlockHeader
-from pytezos.sandbox.parameters import get_protocol_hash, get_protocol_parameters
 from pytezos.rpc import ShellQuery
+from pytezos.sandbox.parameters import get_protocol_hash
+from pytezos.sandbox.parameters import get_protocol_parameters
 
 
 class PyTezosClient(ContextMixin, ContentMixin):
@@ -141,4 +142,5 @@ class PyTezosClient(ContextMixin, ContentMixin):
         return BlockHeader.activate_protocol(
             protocol_hash=get_protocol_hash(alias),
             parameters=get_protocol_parameters(alias),
-            context=self.context)
+            context=self.context,
+        )

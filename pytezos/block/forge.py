@@ -1,6 +1,9 @@
-from typing import Any, Dict, List
+from typing import Any
+from typing import Dict
+from typing import List
 
-from pytezos.michelson.forge import forge_base58, forge_array
+from pytezos.michelson.forge import forge_array
+from pytezos.michelson.forge import forge_base58
 
 
 def forge_command(command):

@@ -69,14 +69,3 @@ class _SandboxedNodeTestCase(unittest.TestCase):
 
     def get_current_protocol(self) -> Dict[str, Any]:
         return self.get_client().shell.block.protocols()
-    #
-    # def activate_protocol(self):
-    #     logger.info('Activating protocol')
-    #     client = self.get_client()
-    #
-    #     block_header = BlockHeader(
-    #         context=client.context,
-    #         content=DEFAULT_PREAPPLY_BLOCK['protocol_data']['content'],
-    #         protocol=DEFAULT_PROTOCOL,
-    #     )
-    #     block_header = block_header.sign().inject()
