@@ -17,6 +17,7 @@ from pytezos.operation.fees import default_storage_limit
 from pytezos.operation.forge import forge_operation_group
 from pytezos.operation.result import OperationResult
 from pytezos.rpc.errors import RpcError
+from pytezos.jupyter import get_class_docstring
 
 DEFAULT_GAS_RESERVE = 100
 DEFAULT_BRANCH_OFFSET = 50

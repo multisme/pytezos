@@ -10,6 +10,8 @@ from pytezos.jupyter import get_class_docstring
 from pytezos.logging import logger
 from pytezos.operation.content import ContentMixin
 from pytezos.operation.group import OperationGroup
+from pytezos.block.header import BlockHeader
+from pytezos.sandbox.parameters import get_protocol_hash, get_protocol_parameters
 from pytezos.rpc import ShellQuery
 
 
@@ -129,3 +131,14 @@ class PyTezosClient(ContextMixin, ContentMixin):
     @loglevel.setter
     def loglevel(self, value: Union[str, int]) -> None:
         logger.setLevel(value)
+
+    def activate_protocol(self, alias: str) -> BlockHeader:
+        """ Initiate user-activated upgrade (sandbox only)
+
+        :param alias: known protocol alias (first 8 symbols)
+        :rtype: BlockHeader
+        """
+        return BlockHeader.activate_protocol(
+            protocol_hash=get_protocol_hash(alias),
+            parameters=get_protocol_parameters(alias),
+            context=self.context)

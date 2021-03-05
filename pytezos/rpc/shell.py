@@ -192,7 +192,7 @@ class BlockInjectionQuery(RpcQuery, path='/injection/block'):
         :param _async: By default, the RPC will wait for the block to be validated before answering, \
         set True if you don't want to.
         :param force:
-        :param chain: Optionally you can specify the chain
+        :param chain: Optionally you can specify the chain (main/test)
         :returns: ID of the block
         """
         return self._post(
