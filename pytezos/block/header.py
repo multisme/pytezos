@@ -1,5 +1,4 @@
 from pprint import pformat
-from pprint import pprint
 from typing import Any
 from typing import Dict
 from typing import List
@@ -15,7 +14,6 @@ from pytezos.crypto.key import blake2b_32
 from pytezos.jupyter import get_class_docstring
 from pytezos.michelson.forge import forge_array
 from pytezos.michelson.forge import forge_base58
-from pytezos.operation.result import OperationResult
 
 
 class BlockHeader(ContextMixin):
@@ -72,6 +70,17 @@ class BlockHeader(ContextMixin):
         # 8. Sign block header
         # 9. Inject header and operations (forged)
         # See https://gitlab.com/nomadic-labs/tezos/-/blob/francois@test-forging-block/tests_python/tools/forge.py for the reference
+        priority = 0
+        baking_rights = context.shell.blocks.head.helpers.baking_rights()
+        for item in baking_rights:
+            if item['delegate'] == context.key.public_key_hash():
+                priority = item['priority']
+
+        protocol_data = {
+            # FIXME: Hardcode
+            "priority": priority,
+            "proof_of_work_nonce": "DEADBEEFDEADBEEF",
+        }
 
         max_operations = context.shell.block()['metadata']['max_operation_list_length'][0]['max_op']
         operations: List[Dict[str, Any]] = []
@@ -79,14 +88,16 @@ class BlockHeader(ContextMixin):
         for status, pending_opg in context.shell.mempool.pending_operations().items():
             if status != 'applied':
                 continue
-            if int(pending_opg[0]['contents'][0]['fee']) >= min_fee:
-                operations.append(pending_opg)
-            if len(operations) == max_operations:
-                break
+            for pending_op in pending_opg:
+                if int(pending_op['contents'][0]['fee']) >= min_fee:
+                    operations.append(pending_op)
+                if len(operations) == max_operations:
+                    break
 
         return BlockHeader(
             context=context,
             operations=operations,
+            protocol_data=protocol_data,
         )
 
 

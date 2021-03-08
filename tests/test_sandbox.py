@@ -4,7 +4,6 @@ from pytezos.client import PyTezosClient
 from pytezos.sandbox.node import _SandboxedNodeTestCase
 from pytezos.sandbox.parameters import sandbox_params, sandbox_addresses, sandbox_protocols
 
-
 # NOTE: Node won't be wiped between tests so alphabetical order of method names matters
 class SandboxedNodeTestCase(_SandboxedNodeTestCase):
     def test_1_activate_protocol(self) -> None:
@@ -43,9 +42,11 @@ class SandboxedNodeTestCase(_SandboxedNodeTestCase):
     def test_3_bake_block(self) -> None:
         # Arrange
         client = self.get_client()
+        client.loglevel = 'DEBUG'
 
         # Act
         op = client.bake_block()
+        # FIXME: proto.008-PtEdo2Zk.operation.not_enough_endorsements_for_priority
         op.fill().sign().inject()
 
         # Assert

@@ -1,5 +1,5 @@
 from pprint import pformat
-
+from pytezos.logging import logger
 import requests
 from simplejson import JSONDecodeError
 
