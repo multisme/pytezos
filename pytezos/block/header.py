@@ -1,4 +1,5 @@
 from pprint import pformat
+from pprint import pprint
 from typing import Any
 from typing import Dict
 from typing import List
@@ -14,6 +15,7 @@ from pytezos.crypto.key import blake2b_32
 from pytezos.jupyter import get_class_docstring
 from pytezos.michelson.forge import forge_array
 from pytezos.michelson.forge import forge_base58
+from pytezos.operation.result import OperationResult
 
 
 class BlockHeader(ContextMixin):
@@ -21,7 +23,7 @@ class BlockHeader(ContextMixin):
         self,
         context: ExecutionContext,
         protocol_data: Optional[Dict[str, Any]] = None,
-        operations: Optional[List[dict]] = None,
+        operations: Optional[List[Dict[str, Any]]] = None,
         protocol: Optional[str] = None,
         signature: Optional[str] = None,
         data: Optional[bytes] = None,
@@ -59,8 +61,34 @@ class BlockHeader(ContextMixin):
         )
 
     @classmethod
-    def bake_block(cls, min_fee=0) -> 'BlockHeader':
-        raise NotImplementedError
+    def bake_block(cls, context: ExecutionContext, min_fee: int = 0) -> 'BlockHeader':
+        # 1. Query pending operations from the mempool (status == applied)
+        # 2. Apply filters (e.g. select only operations with fee > min_fee) <-- optional
+        # 3. Preapply block with selected operations
+        # 4. There are 5 predefined baking accounts (bootstrap) specified in protocol parameters
+        # 5. Check baking rights for the next level http://127.0.0.1:8732/chains/main/blocks/head/helpers/baking_rights to determine priority
+        # 6. Use previous pow stamp (8 bytes) or zero for level 2
+        # 7. Forge block header
+        # 8. Sign block header
+        # 9. Inject header and operations (forged)
+        # See https://gitlab.com/nomadic-labs/tezos/-/blob/francois@test-forging-block/tests_python/tools/forge.py for the reference
+
+        max_operations = context.shell.block()['metadata']['max_operation_list_length'][0]['max_op']
+        operations: List[Dict[str, Any]] = []
+
+        for status, pending_opg in context.shell.mempool.pending_operations().items():
+            if status != 'applied':
+                continue
+            if int(pending_opg[0]['contents'][0]['fee']) >= min_fee:
+                operations.append(pending_opg)
+            if len(operations) == max_operations:
+                break
+
+        return BlockHeader(
+            context=context,
+            operations=operations,
+        )
+
 
     def _spawn(self, **kwargs):
         return BlockHeader(

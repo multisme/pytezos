@@ -144,3 +144,10 @@ class PyTezosClient(ContextMixin, ContentMixin):
             parameters=get_protocol_parameters(alias),
             context=self.context,
         )
+
+    # TODO: Docstring
+    def bake_block(self, min_fee: int = 0):
+        return BlockHeader.bake_block(
+            min_fee=min_fee,
+            context=self.context,
+        )
