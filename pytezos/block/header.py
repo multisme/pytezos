@@ -44,7 +44,8 @@ class BlockHeader(ContextMixin):
         return '\n'.join(res)
 
     @classmethod
-    def activate_protocol(cls, protocol_hash: str, parameters: Dict[str, Any], context: ExecutionContext) -> 'BlockHeader':
+    def activate_protocol(cls, protocol_hash: str, parameters: Dict[str, Any], context: ExecutionContext) \
+            -> 'BlockHeader':
         protocol_data = {
             "content": {
                 "command": "activate",
@@ -70,29 +71,23 @@ class BlockHeader(ContextMixin):
         # 8. Sign block header
         # 9. Inject header and operations (forged)
         # See https://gitlab.com/nomadic-labs/tezos/-/blob/francois@test-forging-block/tests_python/tools/forge.py for the reference
-        priority = 0
+        baker = context.key.public_key_hash()
         baking_rights = context.shell.blocks.head.helpers.baking_rights()
-        for item in baking_rights:
-            if item['delegate'] == context.key.public_key_hash():
-                priority = item['priority']
+        priority = next(item['priority'] for item in baking_rights if item['delegate'] == baker)  # Fail if no rights
 
         protocol_data = {
-            # FIXME: Hardcode
             "priority": priority,
-            "proof_of_work_nonce": "DEADBEEFDEADBEEF",
+            "proof_of_work_nonce": (b'\x00' * 8).hex(),
         }
 
-        max_operations = context.shell.block()['metadata']['max_operation_list_length'][0]['max_op']
-        operations: List[Dict[str, Any]] = []
-
-        for status, pending_opg in context.shell.mempool.pending_operations().items():
-            if status != 'applied':
-                continue
-            for pending_op in pending_opg:
-                if int(pending_op['contents'][0]['fee']) >= min_fee:
-                    operations.append(pending_op)
-                if len(operations) == max_operations:
-                    break
+        # FIXME: this will likely handled by preapply:
+        # max_operations = context.shell.block()['metadata']['max_operation_list_length'][0]['max_op']
+        pending_operations = context.shell.mempool.pending_operations()
+        operations: List[Dict[str, Any]] = [
+            op
+            for op in pending_operations['applied']
+            if sum(map(lambda x: int(x['fee']), op['contents'])) >= min_fee  # handle batch case
+        ]
 
         return BlockHeader(
             context=context,
@@ -100,11 +95,11 @@ class BlockHeader(ContextMixin):
             protocol_data=protocol_data,
         )
 
-
     def _spawn(self, **kwargs):
         return BlockHeader(
             context=self.context,
             protocol_data=kwargs.get('protocol_data', self.protocol_data.copy()),
+            operations=kwargs.get('operations', self.operations.copy()),
             protocol=kwargs.get('protocol', self.protocol),
             signature=kwargs.get('signature', self.signature),
             data=kwargs.get('data', self.data),
@@ -130,7 +125,7 @@ class BlockHeader(ContextMixin):
                 **self.protocol_data,
                 "signature": signature,
             },
-            "operations": self.operations,
+            "operations": self.operation_passes(),
         }
 
     def binary_payload(self) -> bytes:
@@ -140,6 +135,13 @@ class BlockHeader(ContextMixin):
         if self.data is None:
             raise ValueError('No data')
         return self.data + forge_base58(self.signature)
+
+    def operation_passes(self) -> List[List[Dict[str, Any]]]:
+        if self.protocol_data.get('content'):
+            return []
+        else:
+            # FIXME: handle all 4 cases
+            return [[], [], [], self.operations]
 
     def forge(self) -> 'str':
         """Convert json representation of the operation group into bytes.
@@ -186,6 +188,9 @@ class BlockHeader(ContextMixin):
         """
         block = {
             "data": self.binary_payload().hex(),
-            "operations": self.operations,
+            "operations": self.operation_passes(),
         }
-        return self.shell.injection.block.post(block=block, _async=_async, force=force)
+        block_hash = self.shell.injection.block.post(block=block, _async=False, force=force)
+        if not _async:
+            self.shell.wait_next_block(time_between_blocks=0, delay_sec=.1, max_iterations=100)
+        return block_hash

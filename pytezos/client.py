@@ -145,8 +145,12 @@ class PyTezosClient(ContextMixin, ContentMixin):
             context=self.context,
         )
 
-    # TODO: Docstring
-    def bake_block(self, min_fee: int = 0):
+    def bake_block(self, min_fee: int = 0) -> BlockHeader:
+        """ Create and inject new block with operations from mempool
+
+        :param min_fee: filter operations by fee (default is 0)
+        :rtype: BlockHeader
+        """
         return BlockHeader.bake_block(
             min_fee=min_fee,
             context=self.context,

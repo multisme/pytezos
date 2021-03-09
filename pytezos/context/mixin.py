@@ -38,14 +38,19 @@ nodes = {
 keys = {
     'alice': alice_key,
     'dictator': dictator_key,
-    'activator': dictator_key
+    'activator': dictator_key,
+    'bootstrap1': 'edsk3gUfUPyBSfrS9CCgmCiQsTCHGkviBDusMxDJstFtojtc1zcpsh',
+    'bootstrap2': 'edsk39qAm1fiMjgmPkw1EgQYkMzkJezLNewd7PLNHTkr6w9XA2zdfo',
+    'bootstrap3': 'edsk4ArLQgBTLWG5FJmnGnT689VKoqhXwmDPBuGx3z4cvwU9MmrPZZ',
+    'bootstrap4': 'edsk2uqQB9AY4FvioK2YMdfmyMrer5R8mGFyuaLLFfSRo8EoyNdht3',
+    'bootstrap5': 'edsk4QLrcijEffxV31gGdN2HU7UpyJjA8drFoNcmnB28n89YjPNRFm',
 }
 
 
 class KeyHash(Key):
 
     def __init__(self, public_key_hash):
-        super(KeyHash, self).__init__(0)
+        super(KeyHash, self).__init__(b'\x00' * 32)
         self._pkh = public_key_hash
 
     def __repr__(self):
