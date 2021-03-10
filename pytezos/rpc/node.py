@@ -83,12 +83,14 @@ class RpcNode:
             },
             **kwargs
         )
-        logger.debug('<<<<< %s\n%s', res.status_code, pformat(res.json()))
         if res.status_code == 404:
+            logger.debug('<<<<< %s\n%s', res.status_code, pformat(res.text))
             raise RpcError(f'Not found: {path}')
         elif res.status_code != 200:
+            logger.debug('<<<<< %s\n%s', res.status_code, pformat(res.text))
             raise RpcError.from_response(res)
 
+        logger.debug('<<<<< %s\n%s', res.status_code, pformat(res.json()))
         return res
 
     def get(self, path, params=None, timeout=None):

@@ -1,4 +1,5 @@
 import logging
+from unittest import skip
 from pytezos.logging import logger
 from pprint import pprint
 from time import sleep
@@ -24,7 +25,7 @@ class SandboxedNodeTestCase(_SandboxedNodeTestCase):
 
     def test_2_bake_empty_block(self) -> None:
         # Arrange
-        client = self.get_client().using(key='edsk3gUfUPyBSfrS9CCgmCiQsTCHGkviBDusMxDJstFtojtc1zcpsh')
+        client = self.get_client().using(key='bootstrap1')
 
         # Act
         op = client.bake_block()
@@ -34,6 +35,7 @@ class SandboxedNodeTestCase(_SandboxedNodeTestCase):
         # Assert
         ...
 
+    @skip('')
     def test_3_create_transaction(self) -> None:
         # Arrange
         # FIXME: bootstrap1 private key. Move constants from tezos-init-sandboxed-client.sh script to parameters
@@ -46,15 +48,12 @@ class SandboxedNodeTestCase(_SandboxedNodeTestCase):
             amount=42,
         )
 
-        # FIXME: fill() magic!
-        op.branch = client.shell.blocks()[0][0]
-        op.protocol = sandbox_protocols['PtEdo2Zk']
-
         op.fill().sign().inject()
 
         # Assert
         ...
 
+    @skip('')
     def test_4_bake_block(self) -> None:
         # Arrange
         client = self.get_client()
