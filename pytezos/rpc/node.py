@@ -1,7 +1,9 @@
 from pprint import pformat
-from pytezos.logging import logger
+
 import requests
 from simplejson import JSONDecodeError
+
+from pytezos.logging import logger
 
 
 def urljoin(*args):
@@ -71,6 +73,7 @@ class RpcNode:
         return '\n'.join(res)
 
     def request(self, method, path, **kwargs) -> requests.Response:
+        logger.debug('>>>>> %s %s\n%s', method, path, pformat(kwargs))
         res = self._session.request(
             method=method,
             url=urljoin(self.uri, path),
@@ -80,6 +83,7 @@ class RpcNode:
             },
             **kwargs
         )
+        logger.debug('<<<<< %s\n%s', res.status_code, pformat(res.json()))
         if res.status_code == 404:
             raise RpcError(f'Not found: {path}')
         elif res.status_code != 200:

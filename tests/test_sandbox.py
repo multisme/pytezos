@@ -1,8 +1,12 @@
+import logging
+from pytezos.logging import logger
 from pprint import pprint
 from time import sleep
 from pytezos.client import PyTezosClient
 from pytezos.sandbox.node import _SandboxedNodeTestCase
 from pytezos.sandbox.parameters import sandbox_params, sandbox_addresses, sandbox_protocols
+
+logger.setLevel(logging.DEBUG)
 
 # NOTE: Node won't be wiped between tests so alphabetical order of method names matters
 class SandboxedNodeTestCase(_SandboxedNodeTestCase):
@@ -21,7 +25,6 @@ class SandboxedNodeTestCase(_SandboxedNodeTestCase):
     def test_2_bake_empty_block(self) -> None:
         # Arrange
         client = self.get_client().using(key='edsk3gUfUPyBSfrS9CCgmCiQsTCHGkviBDusMxDJstFtojtc1zcpsh')
-        client.loglevel = 'DEBUG'
 
         # Act
         op = client.bake_block()
