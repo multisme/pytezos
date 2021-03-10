@@ -18,7 +18,20 @@ class SandboxedNodeTestCase(_SandboxedNodeTestCase):
         block = client.shell.block()
         self.assertIsNotNone(block['header'].get('content'))
 
-    def test_2_create_transaction(self) -> None:
+    def test_2_bake_empty_block(self) -> None:
+        # Arrange
+        client = self.get_client().using(key='edsk3gUfUPyBSfrS9CCgmCiQsTCHGkviBDusMxDJstFtojtc1zcpsh')
+        client.loglevel = 'DEBUG'
+
+        # Act
+        op = client.bake_block()
+        # FIXME: proto.008-PtEdo2Zk.operation.not_enough_endorsements_for_priority
+        op.fill().sign().inject()
+
+        # Assert
+        ...
+
+    def test_3_create_transaction(self) -> None:
         # Arrange
         # FIXME: bootstrap1 private key. Move constants from tezos-init-sandboxed-client.sh script to parameters
         client = self.get_client().using(key='edsk3gUfUPyBSfrS9CCgmCiQsTCHGkviBDusMxDJstFtojtc1zcpsh')
@@ -39,7 +52,7 @@ class SandboxedNodeTestCase(_SandboxedNodeTestCase):
         # Assert
         ...
 
-    def test_3_bake_block(self) -> None:
+    def test_4_bake_block(self) -> None:
         # Arrange
         client = self.get_client()
         client.loglevel = 'DEBUG'
