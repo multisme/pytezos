@@ -89,7 +89,7 @@ class BlockHeader(ContextMixin):
             operations[validation_pass].append(opg)
 
         # NOTE: Real values will be set during fill
-        protocol_data = {"priority": 0, "proof_of_work_nonce": "0000000000000000", "liquidity_baking_escape_vote": False}
+        protocol_data = {"priority": 0, "proof_of_work_nonce": "0000000000000000"}
         return BlockHeader(
             context=context,
             operations=operations,
