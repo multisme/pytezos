@@ -138,7 +138,7 @@ class BlockHeader(ContextMixin):
             # NOTE: Fails if baker has no baking rights
             protocol_data['priority'] = next(item['priority'] for item in baking_rights if item['delegate'] == baker)
 
-        if 'liquidity_baking_escape_vote' in protocol_parameters:
+        if protocol_parameters is not None and 'liquidity_baking_escape_vote' in protocol_parameters:
             protocol_data['liquidity_baking_escape_vote'] = protocol_parameters['liquidity_baking_escape_vote']
 
         operations = [
