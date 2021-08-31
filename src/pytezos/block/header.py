@@ -120,6 +120,7 @@ class BlockHeader(ContextMixin):
         if timestamp is None:
             timestamp = optimize_timestamp(pred_shell_header['timestamp']) + 1
         protocol = self.shell.blocks[block_id].protocols()['next_protocol']
+        protocol_parameters = self.shell.blocks[block_id].protocol_parameters()
         level = int(pred_shell_header['level']) + 1
         dummy_signature = base58_encode(b'\x00' * 64, b'sig').decode()
 
@@ -136,6 +137,9 @@ class BlockHeader(ContextMixin):
             baking_rights = self.shell.blocks[block_id].helpers.baking_rights(delegate=baker)
             # NOTE: Fails if baker has no baking rights
             protocol_data['priority'] = next(item['priority'] for item in baking_rights if item['delegate'] == baker)
+
+        if 'liquidity_baking_escape_vote' in protocol_parameters:
+            protocol_data['liquidity_baking_escape_vote'] = protocol_parameters['liquidity_baking_escape_vote']
 
         operations = [
             [
