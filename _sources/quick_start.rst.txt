@@ -109,7 +109,7 @@ We are interested in ``using`` method, which is responsible for setting up manag
    <function PyTezosClient.using at 0x7f47fc123550>
     Change current rpc endpoint and account (private key).
 
-    :param shell: one of 'mainnet', '***net', or RPC node uri, or instance of `ShellQuery`
+    :param shell: one of 'mainnet', '***net', or RPC node uri, or instance of :class:`pytezos.rpc.shell.ShellQuery`
     :param key: base58 encoded key, path to the faucet file, alias from tezos-client, or instance of `Key`
     :returns: A copy of current object with changes applied
 
@@ -335,7 +335,7 @@ Let's attach shell and key to the contract interface and see the default storage
 
 .. code-block:: python
 
-    >>> ci = ci.using(key='edsk4CsgT5yQSxXGvU1uXMNNcoMLXGSQ99GRh72j6sQyNKgSnkmzTT')
+    >>> ci = contract.using(key='edsk4CsgT5yQSxXGvU1uXMNNcoMLXGSQ99GRh72j6sQyNKgSnkmzTT')
     ... ci.storage.dummy()
     {'manager': 'tz1Ne4yzDRQPd5HFz6sTaCYCNHwFubT2MWsB', 'tickets': {}}
 
@@ -443,7 +443,7 @@ We have our contracts deployed and ready to be invoked, let's see the list of en
 
     Properties
     .key  # tz1Ne4yzDRQPd5HFz6sTaCYCNHwFubT2MWsB
-    .shell  # https://rpc.tzkt.io/edo2net/ (edo2net)
+    .shell  # https://rpc.tzkt.io/florencenet/ (florencenet)
     .address  # KT1ENowZcfjAwYPSresbMBHnLMUhhuACWL7X
     .block_id  # head
     .entrypoint  # default
@@ -491,7 +491,7 @@ And for the wallet:
 
     Properties
     .key  # tz1Ne4yzDRQPd5HFz6sTaCYCNHwFubT2MWsB
-    .shell  # https://rpc.tzkt.io/edo2net/ (edo2net)
+    .shell  # https://rpc.tzkt.io/florencenet/ (florencenet)
     .address  # KT1H4x2tanAMtKW94HrCbpA9nRssfXX7LRj8
     .block_id  # head
     .entrypoint  # default

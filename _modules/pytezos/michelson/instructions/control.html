@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>pytezos.michelson.instructions.control &mdash; PyTezos  documentation</title>
   
@@ -13,13 +13,19 @@
   
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
 
   
   
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
   
+
   
   
+
+  
+    <link rel="canonical" href="https://pytezos.org/_modules/pytezos/michelson/instructions/control.html" />
 
   
   <!--[if lt IE 9]>
@@ -28,6 +34,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
         <script src="../../../../_static/doctools.js"></script>
@@ -50,7 +57,7 @@
           
 
           
-            <a href="../../../../contents.html" class="icon icon-home" alt="Documentation Home"> PyTezos
+            <a href="../../../../contents.html" class="icon icon-home"> PyTezos
           
 
           
@@ -81,11 +88,11 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../quick_start.html">Quick start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../integration_tests.html">Michelson integration tests</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pytezos_cli.html">Pytezos CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pytezos_cli.html">PyTezos CLI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../high_level.html">High-level interfaces</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../crypto.html">Cryptography</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../operation_groups.html">Building and parsing operations</a></li>
@@ -95,6 +102,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../code.html">Working with Michelson code</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../repl.html">Michelson REPL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../inspect_proposals.html">Inspecting proposals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../michelson_kernel.html">Michelson IPython kernel</a></li>
 </ul>
 
             
@@ -135,6 +143,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -159,30 +169,15 @@
            <div itemprop="articleBody">
             
   <h1>Source code for pytezos.michelson.instructions.control</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Type</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">cast</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
 
 <span class="kn">from</span> <span class="nn">pytezos.context.abstract</span> <span class="kn">import</span> <span class="n">AbstractContext</span>  <span class="c1"># type: ignore</span>
 <span class="kn">from</span> <span class="nn">pytezos.michelson.instructions.adt</span> <span class="kn">import</span> <span class="n">PairInstruction</span>
-<span class="kn">from</span> <span class="nn">pytezos.michelson.instructions.base</span> <span class="kn">import</span> <span class="n">MichelsonInstruction</span>
-<span class="kn">from</span> <span class="nn">pytezos.michelson.instructions.base</span> <span class="kn">import</span> <span class="n">Wildcard</span>
-<span class="kn">from</span> <span class="nn">pytezos.michelson.instructions.base</span> <span class="kn">import</span> <span class="n">format_stdout</span>
+<span class="kn">from</span> <span class="nn">pytezos.michelson.instructions.base</span> <span class="kn">import</span> <span class="n">MichelsonInstruction</span><span class="p">,</span> <span class="n">Wildcard</span><span class="p">,</span> <span class="n">format_stdout</span>
 <span class="kn">from</span> <span class="nn">pytezos.michelson.instructions.stack</span> <span class="kn">import</span> <span class="n">PushInstruction</span>
-<span class="kn">from</span> <span class="nn">pytezos.michelson.micheline</span> <span class="kn">import</span> <span class="n">MichelineSequence</span>
-<span class="kn">from</span> <span class="nn">pytezos.michelson.micheline</span> <span class="kn">import</span> <span class="n">MichelsonRuntimeError</span>
+<span class="kn">from</span> <span class="nn">pytezos.michelson.micheline</span> <span class="kn">import</span> <span class="n">MichelineSequence</span><span class="p">,</span> <span class="n">MichelsonRuntimeError</span>
 <span class="kn">from</span> <span class="nn">pytezos.michelson.stack</span> <span class="kn">import</span> <span class="n">MichelsonStack</span>
-<span class="kn">from</span> <span class="nn">pytezos.michelson.types</span> <span class="kn">import</span> <span class="n">BoolType</span>
-<span class="kn">from</span> <span class="nn">pytezos.michelson.types</span> <span class="kn">import</span> <span class="n">LambdaType</span>
-<span class="kn">from</span> <span class="nn">pytezos.michelson.types</span> <span class="kn">import</span> <span class="n">ListType</span>
-<span class="kn">from</span> <span class="nn">pytezos.michelson.types</span> <span class="kn">import</span> <span class="n">MapType</span>
-<span class="kn">from</span> <span class="nn">pytezos.michelson.types</span> <span class="kn">import</span> <span class="n">MichelsonType</span>
-<span class="kn">from</span> <span class="nn">pytezos.michelson.types</span> <span class="kn">import</span> <span class="n">OptionType</span>
-<span class="kn">from</span> <span class="nn">pytezos.michelson.types</span> <span class="kn">import</span> <span class="n">OrType</span>
-<span class="kn">from</span> <span class="nn">pytezos.michelson.types</span> <span class="kn">import</span> <span class="n">PairType</span>
-<span class="kn">from</span> <span class="nn">pytezos.michelson.types</span> <span class="kn">import</span> <span class="n">SetType</span>
+<span class="kn">from</span> <span class="nn">pytezos.michelson.types</span> <span class="kn">import</span> <span class="n">BoolType</span><span class="p">,</span> <span class="n">LambdaType</span><span class="p">,</span> <span class="n">ListType</span><span class="p">,</span> <span class="n">MapType</span><span class="p">,</span> <span class="n">MichelsonType</span><span class="p">,</span> <span class="n">OptionType</span><span class="p">,</span> <span class="n">OrType</span><span class="p">,</span> <span class="n">PairType</span><span class="p">,</span> <span class="n">SetType</span>
 
 
 <div class="viewcode-block" id="execute_dip"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.execute_dip">[docs]</a><span class="k">def</span> <span class="nf">execute_dip</span><span class="p">(</span><span class="n">prim</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">MichelsonStack</span><span class="p">,</span> <span class="n">stdout</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
@@ -227,13 +222,14 @@
         <span class="n">lambda_type</span> <span class="o">=</span> <span class="n">LambdaType</span><span class="o">.</span><span class="n">create_type</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">args</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">lambda_type</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>  <span class="c1"># type: ignore</span>
         <span class="n">stack</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-        <span class="n">stdout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_stdout</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">prim</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="n">res</span><span class="p">]))</span>  <span class="c1"># type: ignore</span></div></div>
+        <span class="n">stdout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_stdout</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">prim</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="n">res</span><span class="p">]))</span>  <span class="c1"># type: ignore</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">stack_items_added</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="ExecInstruction"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.ExecInstruction">[docs]</a><span class="k">class</span> <span class="nc">ExecInstruction</span><span class="p">(</span><span class="n">MichelsonInstruction</span><span class="p">,</span> <span class="n">prim</span><span class="o">=</span><span class="s1">&#39;EXEC&#39;</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">MichelsonInstruction</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ExecInstruction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExecInstruction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">stack_items_added</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">item</span> <span class="o">=</span> <span class="n">item</span>
 
 <div class="viewcode-block" id="ExecInstruction.execute"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.ExecInstruction.execute">[docs]</a>    <span class="nd">@classmethod</span>
@@ -270,7 +266,7 @@
         <span class="n">res</span> <span class="o">=</span> <span class="n">LambdaType</span><span class="o">.</span><span class="n">create_type</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">right_type</span><span class="p">,</span> <span class="n">lambda_</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]])(</span><span class="n">new_value</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="n">stack</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
         <span class="n">stdout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_stdout</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">prim</span><span class="p">,</span> <span class="p">[</span><span class="n">left</span><span class="p">,</span> <span class="n">lambda_</span><span class="p">],</span> <span class="p">[</span><span class="n">res</span><span class="p">]))</span>  <span class="c1"># type: ignore</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">()</span></div></div>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">stack_items_added</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="FailwithInstruction"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.FailwithInstruction">[docs]</a><span class="k">class</span> <span class="nc">FailwithInstruction</span><span class="p">(</span><span class="n">MichelsonInstruction</span><span class="p">,</span> <span class="n">prim</span><span class="o">=</span><span class="s1">&#39;FAILWITH&#39;</span><span class="p">):</span>
@@ -300,8 +296,8 @@
 
 <div class="viewcode-block" id="IfConsInstruction"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.IfConsInstruction">[docs]</a><span class="k">class</span> <span class="nc">IfConsInstruction</span><span class="p">(</span><span class="n">MichelsonInstruction</span><span class="p">,</span> <span class="n">prim</span><span class="o">=</span><span class="s1">&#39;IF_CONS&#39;</span><span class="p">,</span> <span class="n">args_len</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">MichelsonInstruction</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">IfConsInstruction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack_items_added</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">MichelsonInstruction</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">IfConsInstruction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">stack_items_added</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">item</span> <span class="o">=</span> <span class="n">item</span>
 
 <div class="viewcode-block" id="IfConsInstruction.execute"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.IfConsInstruction.execute">[docs]</a>    <span class="nd">@classmethod</span>
@@ -314,17 +310,19 @@
             <span class="n">stack</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">head</span><span class="p">)</span>
             <span class="n">stdout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_stdout</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">prim</span><span class="p">,</span> <span class="p">[</span><span class="n">lst</span><span class="p">],</span> <span class="p">[</span><span class="n">head</span><span class="p">,</span> <span class="n">tail</span><span class="p">]))</span>  <span class="c1"># type: ignore</span>
             <span class="n">branch</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">stack_items_added</span> <span class="o">=</span> <span class="mi">2</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">stdout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_stdout</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">prim</span><span class="p">,</span> <span class="p">[</span><span class="n">lst</span><span class="p">],</span> <span class="p">[]))</span>  <span class="c1"># type: ignore</span>
             <span class="n">branch</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">stack_items_added</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">item</span> <span class="o">=</span> <span class="n">branch</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">item</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">stack_items_added</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="IfLeftInstruction"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.IfLeftInstruction">[docs]</a><span class="k">class</span> <span class="nc">IfLeftInstruction</span><span class="p">(</span><span class="n">MichelsonInstruction</span><span class="p">,</span> <span class="n">prim</span><span class="o">=</span><span class="s1">&#39;IF_LEFT&#39;</span><span class="p">,</span> <span class="n">args_len</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">MichelsonInstruction</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">IfLeftInstruction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">IfLeftInstruction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">stack_items_added</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">item</span> <span class="o">=</span> <span class="n">item</span>
 
 <div class="viewcode-block" id="IfLeftInstruction.execute"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.IfLeftInstruction.execute">[docs]</a>    <span class="nd">@classmethod</span>
@@ -341,8 +339,8 @@
 
 <div class="viewcode-block" id="IfNoneInstruction"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.IfNoneInstruction">[docs]</a><span class="k">class</span> <span class="nc">IfNoneInstruction</span><span class="p">(</span><span class="n">MichelsonInstruction</span><span class="p">,</span> <span class="n">prim</span><span class="o">=</span><span class="s1">&#39;IF_NONE&#39;</span><span class="p">,</span> <span class="n">args_len</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">MichelsonInstruction</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">IfNoneInstruction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack_items_added</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">MichelsonInstruction</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">IfNoneInstruction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">stack_items_added</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">item</span> <span class="o">=</span> <span class="n">item</span>
 
 <div class="viewcode-block" id="IfNoneInstruction.execute"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.IfNoneInstruction.execute">[docs]</a>    <span class="nd">@classmethod</span>
@@ -352,13 +350,15 @@
         <span class="k">if</span> <span class="n">opt</span><span class="o">.</span><span class="n">is_none</span><span class="p">():</span>
             <span class="n">branch</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">stdout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_stdout</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">prim</span><span class="p">,</span> <span class="p">[</span><span class="n">opt</span><span class="p">],</span> <span class="p">[]))</span>  <span class="c1"># type: ignore</span>
+            <span class="n">stack_items_added</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">some</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">get_some</span><span class="p">()</span>
             <span class="n">stack</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">some</span><span class="p">)</span>
             <span class="n">stdout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_stdout</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">prim</span><span class="p">,</span> <span class="p">[</span><span class="n">opt</span><span class="p">],</span> <span class="p">[</span><span class="n">some</span><span class="p">]))</span>  <span class="c1"># type: ignore</span>
             <span class="n">branch</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">stack_items_added</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">item</span> <span class="o">=</span> <span class="n">branch</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">item</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">stack_items_added</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="LoopInstruction"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.LoopInstruction">[docs]</a><span class="k">class</span> <span class="nc">LoopInstruction</span><span class="p">(</span><span class="n">MichelsonInstruction</span><span class="p">,</span> <span class="n">prim</span><span class="o">=</span><span class="s1">&#39;LOOP&#39;</span><span class="p">,</span> <span class="n">args_len</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
@@ -384,35 +384,38 @@
 
 <div class="viewcode-block" id="LoopLeftInstruction"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.LoopLeftInstruction">[docs]</a><span class="k">class</span> <span class="nc">LoopLeftInstruction</span><span class="p">(</span><span class="n">MichelsonInstruction</span><span class="p">,</span> <span class="n">prim</span><span class="o">=</span><span class="s1">&#39;LOOP_LEFT&#39;</span><span class="p">,</span> <span class="n">args_len</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MichelsonInstruction</span><span class="p">]):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">LoopLeftInstruction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack_items_added</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MichelsonInstruction</span><span class="p">]):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LoopLeftInstruction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">stack_items_added</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">items</span>
 
 <div class="viewcode-block" id="LoopLeftInstruction.execute"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.LoopLeftInstruction.execute">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">MichelsonStack</span><span class="p">,</span> <span class="n">stdout</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">context</span><span class="p">:</span> <span class="n">AbstractContext</span><span class="p">):</span>
+        <span class="n">stack_items_added</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">items</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">or_</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">OrType</span><span class="p">,</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop1</span><span class="p">())</span>
             <span class="n">or_</span><span class="o">.</span><span class="n">assert_type_in</span><span class="p">(</span><span class="n">OrType</span><span class="p">)</span>
             <span class="n">var</span> <span class="o">=</span> <span class="n">or_</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
             <span class="n">stack</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+            <span class="n">stack_items_added</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">stdout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_stdout</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">prim</span><span class="p">,</span> <span class="p">[</span><span class="n">or_</span><span class="p">],</span> <span class="p">[</span><span class="n">var</span><span class="p">]))</span>  <span class="c1"># type: ignore</span>
             <span class="k">if</span> <span class="n">or_</span><span class="o">.</span><span class="n">is_left</span><span class="p">():</span>
                 <span class="n">item</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
                 <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">break</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">items</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">stack_items_added</span><span class="p">,</span> <span class="n">items</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="MapInstruction"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.MapInstruction">[docs]</a><span class="k">class</span> <span class="nc">MapInstruction</span><span class="p">(</span><span class="n">MichelsonInstruction</span><span class="p">,</span> <span class="n">prim</span><span class="o">=</span><span class="s1">&#39;MAP&#39;</span><span class="p">,</span> <span class="n">args_len</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MichelsonInstruction</span><span class="p">]):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">MapInstruction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack_items_added</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MichelsonInstruction</span><span class="p">]):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MapInstruction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">stack_items_added</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">items</span>
 
 <div class="viewcode-block" id="MapInstruction.execute"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.MapInstruction.execute">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">MichelsonStack</span><span class="p">,</span> <span class="n">stdout</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">context</span><span class="p">:</span> <span class="n">AbstractContext</span><span class="p">):</span>
+        <span class="n">stack_items_added</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">src</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Union</span><span class="p">[</span><span class="n">ListType</span><span class="p">,</span> <span class="n">MapType</span><span class="p">],</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop1</span><span class="p">())</span>
         <span class="n">executions</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">items</span> <span class="o">=</span> <span class="p">[]</span>
@@ -421,6 +424,7 @@
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">MapType</span><span class="p">):</span>
                 <span class="n">elt</span> <span class="o">=</span> <span class="n">PairType</span><span class="o">.</span><span class="n">from_comb</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">elt</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
             <span class="n">stack</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">elt</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="n">stack_items_added</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">stdout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_stdout</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">prim</span><span class="p">,</span> <span class="n">popped</span><span class="p">,</span> <span class="p">[</span><span class="n">elt</span><span class="p">]))</span>  <span class="c1"># type: ignore</span>
             <span class="n">execution</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
             <span class="n">executions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">execution</span><span class="p">)</span>
@@ -436,58 +440,58 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">res</span> <span class="o">=</span> <span class="n">src</span>  <span class="c1"># TODO: need to deduce argument types</span>
         <span class="n">stack</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        <span class="n">stack_items_added</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">stdout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_stdout</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">prim</span><span class="p">,</span> <span class="n">popped</span><span class="p">,</span> <span class="p">[</span><span class="n">res</span><span class="p">]))</span>  <span class="c1"># type: ignore</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">executions</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">stack_items_added</span><span class="p">,</span> <span class="n">executions</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="IterInstruction"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.IterInstruction">[docs]</a><span class="k">class</span> <span class="nc">IterInstruction</span><span class="p">(</span><span class="n">MichelsonInstruction</span><span class="p">,</span> <span class="n">prim</span><span class="o">=</span><span class="s1">&#39;ITER&#39;</span><span class="p">,</span> <span class="n">args_len</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MichelsonInstruction</span><span class="p">]):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">IterInstruction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack_items_added</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MichelsonInstruction</span><span class="p">]):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">IterInstruction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">stack_items_added</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">items</span>
 
 <div class="viewcode-block" id="IterInstruction.execute"><a class="viewcode-back" href="../../../../instructions.html#pytezos.michelson.instructions.control.IterInstruction.execute">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">MichelsonStack</span><span class="p">,</span> <span class="n">stdout</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">context</span><span class="p">:</span> <span class="n">AbstractContext</span><span class="p">):</span>
+        <span class="n">stack_items_added</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">src</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Union</span><span class="p">[</span><span class="n">ListType</span><span class="p">,</span> <span class="n">MapType</span><span class="p">,</span> <span class="n">SetType</span><span class="p">],</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop1</span><span class="p">())</span>
         <span class="n">executions</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">popped</span> <span class="o">=</span> <span class="p">[</span><span class="n">src</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">elt</span> <span class="ow">in</span> <span class="n">src</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">MapType</span><span class="p">):</span>
                 <span class="n">elt</span> <span class="o">=</span> <span class="n">PairType</span><span class="o">.</span><span class="n">from_comb</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">elt</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+            <span class="n">stack_items_added</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">stack</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">elt</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
             <span class="n">stdout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_stdout</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">prim</span><span class="p">,</span> <span class="n">popped</span><span class="p">,</span> <span class="p">[</span><span class="n">elt</span><span class="p">]))</span>  <span class="c1"># type: ignore</span>
             <span class="n">execution</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
             <span class="n">executions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">execution</span><span class="p">)</span>
             <span class="n">popped</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">executions</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">stack_items_added</span><span class="p">,</span> <span class="n">executions</span><span class="p">)</span></div></div>
 </pre></div>
 
            </div>
            
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2020, Baking Bad
+        &#169; Copyright 2020, Baking Bad.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 
